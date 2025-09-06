@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Universal Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #001a1a 25%, #003333 50%, #004d4d 75%, #006666 100%);
+            color: #00ffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .calculator {
+            background: linear-gradient(145deg, #000000, #001a1a);
+            backdrop-filter: blur(20px);
+            border: 2px solid #00ffff;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.5),
+                0 0 40px rgba(0, 255, 255, 0.3),
+                0 0 60px rgba(0, 255, 255, 0.1),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        .display {
+            background: linear-gradient(145deg, #000000, #001a1a);
+            border: 2px solid #ff0000;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: right;
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #00ffff;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: hidden;
+            word-wrap: break-word;
+            box-shadow: 
+                0 0 15px rgba(0, 255, 255, 0.4),
+                inset 0 0 10px rgba(0, 255, 255, 0.1);
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #000000, #001a1a);
+            border: 2px solid #ff0000;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #00ffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            touch-action: manipulation;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 0 15px rgba(0, 255, 255, 0.3),
+                5px 5px 15px rgba(0, 0, 0, 0.8),
+                inset 0 0 10px rgba(0, 255, 255, 0.1);
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.8);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 0 25px rgba(0, 255, 255, 0.6),
+                0 8px 25px rgba(0, 0, 0, 0.8),
+                inset 0 0 15px rgba(0, 255, 255, 0.2);
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 
+                inset 5px 5px 15px rgba(0, 0, 0, 0.8),
+                inset 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .btn.operator {
+            background: linear-gradient(145deg, #00ffff, #00bfff);
+            color: #000000;
+            border: 2px solid #ff0000;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        .btn.operator:hover {
+            background: linear-gradient(145deg, #00bfff, #0099cc);
+        }
+
+        .btn.equals {
+            background: linear-gradient(145deg, #00ffff, #00bfff);
+            color: #000000;
+            border: 2px solid #ff0000;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .btn.equals:hover {
+            background: linear-gradient(145deg, #00bfff, #0099cc);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.8); }
+        }
+
+        .btn.clear {
+            background: linear-gradient(145deg, #ff6b6b, #ff4757);
+            color: white;
+            border: 2px solid #ff0000;
+        }
+
+        .btn.clear:hover {
+            background: linear-gradient(145deg, #ff4757, #ff3742);
+        }
+
+        .btn.delete {
+            background: linear-gradient(145deg, #ff4757, #ff3742);
+            color: white;
+            border: 2px solid #ff0000;
+        }
+
+        .btn.delete:hover {
+            background: linear-gradient(145deg, #ff3742, #ff2d3a);
+        }
+
+        .btn.pressed {
+            transform: scale(0.95);
+            transition: transform 0.1s ease;
+            box-shadow: 
+                inset 5px 5px 15px rgba(0, 0, 0, 0.8),
+                inset 0 0 25px rgba(0, 255, 255, 0.4);
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 1);
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .calculator {
+                padding: 20px;
+                max-width: 100%;
+            }
+            
+            .display {
+                font-size: 2rem;
+                padding: 15px;
+                min-height: 60px;
+            }
+            
+            .btn {
+                padding: 15px;
+                font-size: 1.2rem;
+                min-height: 50px;
+            }
+            
+            .buttons {
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .calculator {
+                padding: 15px;
+            }
+            
+            .display {
+                font-size: 1.8rem;
+                padding: 12px;
+            }
+            
+            .btn {
+                padding: 12px;
+                font-size: 1.1rem;
+                min-height: 45px;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 60px;
+                font-size: 1.3rem;
+            }
+            
+            .btn:hover {
+                transform: none;
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus {
+            outline: 2px solid rgba(59, 130, 246, 0.8);
+            outline-offset: 2px;
+        }
+
+        .error {
+            color: #ef4444;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="btn clear" onclick="clearDisplay()" data-key="Escape">C</button>
+            <button class="btn delete" onclick="deleteLast()" data-key="Backspace">⌫</button>
+            <button class="btn operator" onclick="appendOperator('(')" data-key="(">(</button>
+            <button class="btn operator" onclick="appendOperator(')')" data-key=")">)</button>
+            
+            <button class="btn" onclick="appendNumber('7')" data-key="7">7</button>
+            <button class="btn" onclick="appendNumber('8')" data-key="8">8</button>
+            <button class="btn" onclick="appendNumber('9')" data-key="9">9</button>
+            <button class="btn operator" onclick="appendOperator('/')" data-key="/">÷</button>
+            
+            <button class="btn" onclick="appendNumber('4')" data-key="4">4</button>
+            <button class="btn" onclick="appendNumber('5')" data-key="5">5</button>
+            <button class="btn" onclick="appendNumber('6')" data-key="6">6</button>
+            <button class="btn operator" onclick="appendOperator('*')" data-key="*">×</button>
+            
+            <button class="btn" onclick="appendNumber('1')" data-key="1">1</button>
+            <button class="btn" onclick="appendNumber('2')" data-key="2">2</button>
+            <button class="btn" onclick="appendNumber('3')" data-key="3">3</button>
+            <button class="btn operator" onclick="appendOperator('-')" data-key="-">−</button>
+            
+            <button class="btn" onclick="appendNumber('0')" data-key="0">0</button>
+            <button class="btn" onclick="appendDecimal()" data-key=".">.</button>
+            <button class="btn operator" onclick="appendOperator('+')" data-key="+">+</button>
+            <button class="btn equals" onclick="calculate()" data-key="Enter">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentExpression = '0';
+        let lastResult = null;
+        let isNewCalculation = true;
+
+        // Touch and click event handling
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                this.classList.add('pressed');
+            });
+            
+            btn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                this.classList.remove('pressed');
+            });
+            
+            btn.addEventListener('mousedown', function() {
+                this.classList.add('pressed');
+            });
+            
+            btn.addEventListener('mouseup', function() {
+                this.classList.remove('pressed');
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.classList.remove('pressed');
+            });
+        });
+
+        // Comprehensive keyboard event handling
+        document.addEventListener('keydown', function(e) {
+            e.preventDefault();
+            
+            const key = e.key;
+            
+            // Handle number keys (0-9) - both main keyboard and numpad
+            if ((key >= '0' && key <= '9') || (key >= 'Numpad0' && key <= 'Numpad9')) {
+                const num = key.replace('Numpad', '');
+                appendNumber(num);
+                highlightButton(num);
+            }
+            // Handle operators - both main keyboard and numpad
+            else if (key === '+' || key === 'NumpadAdd') {
+                appendOperator('+');
+                highlightButton('+');
+            }
+            else if (key === '-' || key === 'NumpadSubtract') {
+                appendOperator('-');
+                highlightButton('-');
+            }
+            else if (key === '*' || key === 'NumpadMultiply') {
+                appendOperator('*');
+                highlightButton('*');
+            }
+            else if (key === '/' || key === 'NumpadDivide') {
+                appendOperator('/');
+                highlightButton('/');
+            }
+            // Handle decimal point - both main keyboard and numpad
+            else if (key === '.' || key === 'NumpadDecimal') {
+                appendDecimal();
+                highlightButton('.');
+            }
+            // Handle equals - both main keyboard and numpad
+            else if (key === 'Enter' || key === '=' || key === 'NumpadEnter') {
+                calculate();
+                highlightButton('Enter');
+            }
+            // Handle clear
+            else if (key === 'Escape' || key === 'c' || key === 'C') {
+                clearDisplay();
+                highlightButton('Escape');
+            }
+            // Handle backspace/delete
+            else if (key === 'Backspace' || key === 'Delete') {
+                deleteLast();
+                highlightButton('Backspace');
+            }
+            // Handle parentheses
+            else if (key === '(' || key === ')') {
+                appendOperator(key);
+                highlightButton(key);
+            }
+        });
+
+        // Function to highlight button when keyboard is used
+        function highlightButton(key) {
+            const btn = document.querySelector(`[data-key="${key}"]`);
+            if (btn) {
+                btn.classList.add('pressed');
+                setTimeout(() => {
+                    btn.classList.remove('pressed');
+                }, 150);
+            }
+        }
+
+        function updateDisplay() {
+            const display = document.getElementById('display');
+            display.textContent = currentExpression || '0';
+            display.classList.remove('error');
+        }
+
+        function showError(message) {
+            const display = document.getElementById('display');
+            display.textContent = message;
+            display.classList.add('error');
+        }
+
+        function appendNumber(num) {
+            if (isNewCalculation) {
+                currentExpression = num;
+                isNewCalculation = false;
+            } else {
+                if (currentExpression === '0') {
+                    currentExpression = num;
+                } else {
+                    currentExpression += num;
+                }
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(operator) {
+            if (isNewCalculation && lastResult !== null) {
+                currentExpression = lastResult + operator;
+                isNewCalculation = false;
+            } else {
+                // Prevent multiple operators in a row
+                const lastChar = currentExpression.slice(-1);
+                if (/[\+\-\*\/]/.test(lastChar)) {
+                    currentExpression = currentExpression.slice(0, -1) + operator;
+                } else {
+                    currentExpression += operator;
+                }
+            }
+            updateDisplay();
+        }
+
+        function appendDecimal() {
+            if (isNewCalculation) {
+                currentExpression = '0.';
+                isNewCalculation = false;
+                updateDisplay();
+                return;
+            }
+
+            // Find the current number segment
+            const segments = currentExpression.split(/[\+\-\*\/\(\)]/);
+            const currentSegment = segments[segments.length - 1];
+            
+            // Only add decimal if current segment doesn't have one
+            if (!currentSegment.includes('.')) {
+                // If the last char is an operator, add 0. first
+                const lastChar = currentExpression.slice(-1);
+                if (/[\+\-\*\/\(]/.test(lastChar)) {
+                    currentExpression += '0.';
+                } else {
+                    currentExpression += '.';
+                }
+                updateDisplay();
+            }
+        }
+
+        function clearDisplay() {
+            currentExpression = '0';
+            lastResult = null;
+            isNewCalculation = true;
+            updateDisplay();
+        }
+
+        function deleteLast() {
+            if (currentExpression.length > 1) {
+                currentExpression = currentExpression.slice(0, -1);
+            } else {
+                currentExpression = '0';
+            }
+            updateDisplay();
+        }
+
+        function calculate() {
+            if (currentExpression === '0' || currentExpression === '') {
+                return;
+            }
+
+            // Replace display symbols with actual operators
+            let expression = currentExpression
+                .replace(/×/g, '*')
+                .replace(/÷/g, '/')
+                .replace(/−/g, '-');
+
+            fetch('http://localhost:5000/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ expression: expression })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError('Error');
+                    lastResult = null;
+                } else {
+                    lastResult = data.result;
+                    currentExpression = lastResult.toString();
+                    isNewCalculation = true;
+                    updateDisplay();
+                }
+            })
+            .catch(error => {
+                showError('Error');
+                lastResult = null;
+            });
+        }
+
+        // Initialize display
+        updateDisplay();
+
+        // Prevent zoom on double tap (mobile)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
